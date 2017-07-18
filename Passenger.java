@@ -6,14 +6,18 @@
  * Thread class for Robot Passengers.
  */
 public class Passenger implements Runnable{
-    int id, destination;
+    int id;
+    Station source, destination;
+    Train train;
 
     /*
     *   CONSTRUCTOR
     */
-    public Passenger(int id, int destination){
+    public Passenger(int id, Station source, Station destination, Train train){
         this.id = id;
+        this.source = source;
         this.destination = destination;
+        this.train = train;
     }
     
     /*
@@ -22,9 +26,7 @@ public class Passenger implements Runnable{
     @Override
     public void run() {
         
-        
-        
-        
+
         
         
     }
@@ -33,14 +35,18 @@ public class Passenger implements Runnable{
     *   WAIT FOR TRAIN FUNCTION
     */
     public void stationWaitForTrain(Station station){
-        
+        while(station.trainAtStation == null)
+            try{
+            station.trainIsPresent.await();
+            }
+            catch(Exception e){}
     }
     
     /*
     *   ON BOARD TRAIN FUNCTION
     */
     public void stationOnBoard(Station station){
-        
+
     }
     
     /*
@@ -54,7 +60,11 @@ public class Passenger implements Runnable{
         return id;
     }
     
-    public int getDestination(){
+    public Station getSource(){
+        return source;
+    }
+    
+    public Station getDestination(){
         return destination;
     }
 }

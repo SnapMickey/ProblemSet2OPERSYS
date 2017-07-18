@@ -10,18 +10,20 @@ import java.util.concurrent.locks.Lock;
  * Thread class for Trains.
  */
 public class Train implements Runnable{
-    int trainNum, numOfSeats;
-    ArrayList<Passenger> passengers;
-
+    int trainNum;
+    Station currentStation;
+    Passenger seats[];  
     
     /*
     *   CONSTRUCTOR
     */
     public Train(int trainNum, int seats){
         this.trainNum = trainNum;
-        this.numOfSeats = seats;
+        this.currentStation = null;
+        this.seats = new Passenger[seats];
         
-        this.passengers = new ArrayList();
+        for(int i = 0; i < seats; i++)
+            this.seats[i] = null;
     }
 
     /*
@@ -29,31 +31,56 @@ public class Train implements Runnable{
     */
     @Override
     public void run() {
-        
+        while(true){
+            for(int i = 0; i < 8; i++){
+                //Call stationLoadTrain
+                move(); //Move train going to the next station
+            }
+        }
+    }
+    public void stationLoadTrain(Station station){
+        currentStation = station;
+        station.trainAtStation = this;
+        station.trainIsPresent.signal();
+         
+        while(getNumOfSeats(true) > 0 && station.getNumOfPassengers() > 0)
+            station.hasFreeSeats.signal();
     }
     
+    public void move(){
+        
+    }
+    public void freeSeat(Passenger p){
+        for (Passenger seat : seats) 
+            if(seat != null)
+                if(seat.getID() == p.getID()) 
+                    seat = null;
+    }
+     
+     
     public int getNumOfPassengers(){
-        return passengers.size();
+        int numOfPassengers = 0;
+        for (Passenger seat : seats) 
+            if (seat != null) 
+                numOfPassengers++;
+
+        return numOfPassengers;
     }
     
     public int getNumOfSeats(boolean onlyFree){
         if(onlyFree){
-            return numOfSeats - passengers.size();
+            int numOfFreeSeats = 0;
+            for (Passenger seat : seats) 
+                if (seat == null) 
+                    numOfFreeSeats++;
+
+            return numOfFreeSeats;
         }
         else
-            return numOfSeats;
+            return seats.length;
     }
     
     public int getTrainNum(){
         return trainNum;
     }
-    
-    public void removePassenger(Passenger passenger){
-        passengers.remove(passenger);
-    }
-    
-    public void addPassenger(Passenger passenger){
-            passengers.add(passenger);
-    }
-    
 }

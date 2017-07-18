@@ -1,5 +1,6 @@
 
 import java.util.ArrayList;
+import java.util.concurrent.locks.*;
 
 
 /**
@@ -11,6 +12,11 @@ import java.util.ArrayList;
  */
 public class Station {
     int stationNum;
+    Train trainAtStation;
+    Lock boarding;
+    Condition trainIsPresent, hasFreeSeats;
+    
+    
     ArrayList<Passenger> passengers;
     
     /*
@@ -23,6 +29,11 @@ public class Station {
             this.passengers.addAll(passengers);
         
         this.stationNum = stationNum;
+        this.trainAtStation = null;
+        
+        boarding = new ReentrantLock();
+        trainIsPresent = boarding.newCondition();
+        hasFreeSeats = boarding.newCondition();
     }
     
     public int getNumOfPassengers(){
@@ -31,21 +42,5 @@ public class Station {
     
     public int getStationNum(){
         return stationNum;
-    }
-    
-    public void removePassenger(Passenger passenger){
-        passengers.remove(passenger);
-    }
-    
-    public void removePassengers(ArrayList<Passenger> passengers){
-        this.passengers.removeAll(passengers);
-    }
-    
-    public void addPassenger(Passenger passenger){
-            passengers.add(passenger);
-    }
-    
-    public void addPassengers(ArrayList<Passenger> passengers){
-        this.passengers.addAll(passengers);
     }
 }
