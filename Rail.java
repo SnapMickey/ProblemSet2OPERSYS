@@ -8,12 +8,12 @@
  *
  * @author Jared
  */
-public class Rail {
+public class Rail{
     Train train;
     Station station;
-    public Rail(Train train, Station station){
-        this.train = train;
+    public Rail(Station station, Train train){
         this.station = station;
+        this.train = train;
     }
     
     public Train getTrain(){

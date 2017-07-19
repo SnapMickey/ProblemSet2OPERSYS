@@ -36,11 +36,40 @@ public class Station {
         hasFreeSeats = boarding.newCondition();
     }
     
+    public void stationLoadTrain(int numOfSeats){
+
+    
+    }
+    
+    public void addPassenger(ArrayList<Passenger> passengers){
+        this.passengers.addAll(passengers);
+    }
+    
+    public void addPassenger(Passenger passenger){
+        this.passengers.add(passenger);
+    }
+    
+    public void removePassenger(ArrayList<Passenger> passengers){
+        this.passengers.removeAll(passengers);
+    }
+    
+    public void removePassenger(Passenger passenger){
+        this.passengers.remove(passenger);
+    }
+    
     public int getNumOfPassengers(){
         return passengers.size();
     }
     
     public int getStationNum(){
         return stationNum;
+    }
+    
+    public Train getTrain(){
+        return trainAtStation;
+    }
+    
+    public void setTrain(Train train){
+        trainAtStation = train;
     }
 }

@@ -34,22 +34,11 @@ public class Train implements Runnable{
         while(true){
             for(int i = 0; i < 8; i++){
                 //Call stationLoadTrain
-                move(); //Move train going to the next station
+                //Move train going to the next station
             }
         }
     }
-    public void stationLoadTrain(Station station){
-        currentStation = station;
-        station.trainAtStation = this;
-        station.trainIsPresent.signal();
-         
-        while(getNumOfSeats(true) > 0 && station.getNumOfPassengers() > 0)
-            station.hasFreeSeats.signal();
-    }
     
-    public void move(){
-        
-    }
     public void freeSeat(Passenger p){
         for (Passenger seat : seats) 
             if(seat != null)
@@ -82,5 +71,13 @@ public class Train implements Runnable{
     
     public int getTrainNum(){
         return trainNum;
+    }
+    
+    public Station getCurrentStation(){
+        return currentStation;
+    }
+    
+    public void setCurrentStation(Station station){
+        currentStation = station;
     }
 }
