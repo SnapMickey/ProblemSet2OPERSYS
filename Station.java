@@ -36,11 +36,6 @@ public class Station {
         hasFreeSeats = boarding.newCondition();
     }
     
-    public void stationLoadTrain(int numOfSeats){
-
-    
-    }
-    
     public void addPassenger(ArrayList<Passenger> passengers){
         this.passengers.addAll(passengers);
     }

@@ -1,3 +1,7 @@
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author Jared
@@ -8,16 +12,18 @@
 public class Passenger implements Runnable{
     int id, destination;
     Station currentStation;
-    Train train;
+    Seat seat;
+    Train train;                                      
 
     /*
     *   CONSTRUCTOR
     */
-    public Passenger(int id, Station source, int destination, Train train){
+    public Passenger(int id, Station source, int destination){
         this.id = id;
         this.currentStation = source;
         this.destination = destination;
-        this.train = train;
+        this.seat = null;
+        this.train = null;
     }
     
     /*
@@ -45,17 +51,17 @@ public class Passenger implements Runnable{
     /*
     *   ON BOARD TRAIN FUNCTION
     */
-    public void stationOnBoard(Station station){
+    public void stationOnBoard(){
+        while(train.getCurrentStation().getStationNum() != destination)
+            try {
+                seat.getOccupied().await();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Passenger.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        seat.getOccupied().signal();
+        seat.getLock().unlock();  
+    }
 
-    }
-    
-    /*
-    *   BOARDING TRAIN FUNCTION
-    */
-    public void boardTrain(){
-        
-    }
-    
     public int getID(){
         return id;
     }

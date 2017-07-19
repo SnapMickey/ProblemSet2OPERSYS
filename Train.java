@@ -12,7 +12,8 @@ import java.util.concurrent.locks.Lock;
 public class Train implements Runnable{
     int trainNum;
     Station currentStation;
-    Passenger seats[];  
+    ArrayList<Passenger> passengers;
+    Seat seats[];  
     
     /*
     *   CONSTRUCTOR
@@ -20,10 +21,11 @@ public class Train implements Runnable{
     public Train(int trainNum, int seats){
         this.trainNum = trainNum;
         this.currentStation = null;
-        this.seats = new Passenger[seats];
+        this.passengers = new ArrayList();
+        this.seats = new Seat[seats];
         
         for(int i = 0; i < seats; i++)
-            this.seats[i] = null;
+            this.seats[i] = new Seat(i);
     }
 
     /*
@@ -39,8 +41,12 @@ public class Train implements Runnable{
         }
     }
     
+    public void stationLoadTrain(){
+    
+    }
+    
     public void freeSeat(Passenger p){
-        for (Passenger seat : seats) 
+        for (Seat seat : seats) 
             if(seat != null)
                 if(seat.getID() == p.getID()) 
                     seat = null;
@@ -48,20 +54,18 @@ public class Train implements Runnable{
      
      
     public int getNumOfPassengers(){
-        int numOfPassengers = 0;
-        for (Passenger seat : seats) 
-            if (seat != null) 
-                numOfPassengers++;
-
-        return numOfPassengers;
+        return passengers.size();
     }
     
     public int getNumOfSeats(boolean onlyFree){
         if(onlyFree){
             int numOfFreeSeats = 0;
-            for (Passenger seat : seats) 
-                if (seat == null) 
-                    numOfFreeSeats++;
+            for (Seat seat : seats) 
+                try{
+                    if(seat.getLock().tryLock())
+                        numOfFreeSeats++;
+                }
+                finally{seat.getLock().unlock();}
 
             return numOfFreeSeats;
         }

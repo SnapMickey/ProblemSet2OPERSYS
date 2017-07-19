@@ -1,3 +1,6 @@
+
+import java.util.concurrent.locks.*;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -11,6 +14,8 @@
 public class Rail{
     Train train;
     Station station;
+    Lock lock = new ReentrantLock();
+    
     public Rail(Station station, Train train){
         this.station = station;
         this.train = train;
