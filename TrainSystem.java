@@ -91,8 +91,9 @@ public class TrainSystem {
             for(int i=0;i<16;i++){
                 if(rails[i].getTrain() != null)
                     approveNewTrain = false;
-                else if(rails[i].getStation().equals(station))
-                    break;
+                else if(rails[i].getStation() != null)
+                    if(rails[i].getStation().equals(station))
+                        break;
             }
         }
         

@@ -18,6 +18,7 @@ public class CalTrain {
         ArrayList<Train> trains = new ArrayList();
         
         trains.add(new Train(system,1,1));
+        trains.add(new Train(system,2,1));
         system.createTrains(trains);
         
         passengers.add(new Passenger(1,2));
