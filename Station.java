@@ -83,15 +83,16 @@ public class Station {
         stationLock.lock();
         try{
             
-            ArrayList<Passenger>passengersOnTrain = new ArrayList();
-            passengersOnTrain.addAll(trainAtStation.getPassengers());
+//            ArrayList<Passenger>passengersOnTrain = new ArrayList();
+//            passengersOnTrain.addAll(trainAtStation.getPassengers());
             
             boardingLock.lock();
             try{
-                for(Passenger p : passengersOnTrain){
-                    if(p.getDestination() == stationNum){
-                        trainAtStation.removePassenger(p);
-                        p.getOffTrain();
+                for(Passenger p : trainAtStation.getPassengers()){  // : passengersOnTrain){
+                    if(p != null)
+                        if(p.getDestination() == stationNum){
+                            //trainAtStation.removePassenger(p);
+                            p.getOffTrain();
                     }
                 }
                     boarding.signal();
@@ -100,7 +101,7 @@ public class Station {
             }
             
             try {
-                while(trainAtStation.getNumOfSeats(true) > 0 && passengers.size() > 0)
+                if(trainAtStation.hasFreeSeat() && passengers.size() > 0)
                     notBoarding.await();
             } catch (InterruptedException ex) {
                 Logger.getLogger(Station.class.getName()).log(Level.SEVERE, null, ex);
@@ -118,13 +119,12 @@ public class Station {
         
         boardingLock.lock();
         try {
-            while (trainAtStation == null || trainAtStation.getNumOfSeats(true) == 0) {
+            while (trainAtStation == null || !trainAtStation.hasFreeSeat()) {
                 try{
                     boarding.await();
                 }
                 catch(InterruptedException e){}
             }
-            
             p.boardTrain();
             
             boarding.signal();

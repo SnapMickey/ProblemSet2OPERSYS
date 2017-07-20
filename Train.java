@@ -13,9 +13,11 @@ import java.util.logging.Logger;
  */
 public class Train extends Thread{
     TrainSystem system;
-    int trainNum, numOfSeats, numOfFreeSeats;
+    int trainNum, numOfSeats; //, numOfFreeSeats;
     Station currentStation;
-    ArrayList<Passenger> passengers;
+    //ArrayList<Passenger> passengers;
+    Passenger[] passengers;
+    
     /*
     *   CONSTRUCTOR
     */
@@ -23,8 +25,13 @@ public class Train extends Thread{
         this.system = system;
         this.trainNum = trainNum;
         this.currentStation = null;
-        numOfSeats = numOfFreeSeats = seats;
-        passengers = new ArrayList();
+        numOfSeats = seats; //numOfFreeSeats = seats;
+        
+        passengers = new Passenger[seats];
+        
+        for(int i = 0; i < seats; i++)
+            passengers[i] = null;
+        //passengers = new ArrayList();
     }
 
     /*
@@ -54,28 +61,60 @@ public class Train extends Thread{
     }
     
     
-    public void addPassenger(Passenger passenger){
-        passengers.add(passenger);
-        numOfFreeSeats--;
-    }
+//    public void addPassenger(Passenger passenger){
+//        passengers.add(passenger);
+//        numOfFreeSeats--;
+//    }
+//    public void removePassenger(Passenger passenger){
+//        passengers.remove(passenger);
+//        numOfFreeSeats++;
+//    }
+//    
+//    public ArrayList getPassengers(){
+//        return passengers;
+//    }
+//    
+//    public int getNumOfPassengers(){
+//        return passengers.size();
+//    }
     
-    public void removePassenger(Passenger passenger){
-        passengers.remove(passenger);
-        numOfFreeSeats++;
-    }
-    
-    public ArrayList getPassengers(){
+    public Passenger[] getPassengers(){
         return passengers;
     }
-    
+
     public int getNumOfPassengers(){
-        return passengers.size();
+        
+        int numOfPassengers = 0;
+        for(Passenger p : passengers){
+                if(p == null)
+                    numOfPassengers++;
+            }
+
+        return numOfPassengers;
+
+
+        //return passengers.size();
+    }
+    
+    public boolean hasFreeSeat(){
+        for(Passenger p : passengers){
+            if(p == null)
+                return true;
+        }
+        return false;
     }
     
     public int getNumOfSeats(boolean onlyFree){
-        if(onlyFree)
+        if(onlyFree){
+            int numOfFreeSeats = 0;
+            for(Passenger p : passengers){
+                if(p == null)
+                    numOfFreeSeats++;
+            }
+            
             return numOfFreeSeats;
-        else
+        }
+        
             return numOfSeats;
     }
     

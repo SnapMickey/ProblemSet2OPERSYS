@@ -13,7 +13,7 @@ public class Passenger extends Thread{
     int id, destination;
     Station currentStation;
     Train train;                                      
-
+    
     /*
     *   CONSTRUCTOR
     */
@@ -41,16 +41,28 @@ public class Passenger extends Thread{
     
     public void boardTrain(){
         train = currentStation.getTrain();
-        train.addPassenger(this);
+        //train.addPassenger(this);
+        for(int i = 0; i < train.getNumOfSeats(false); i++){
+            if(train.getPassengers()[i] == null){
+                train.getPassengers()[i] = this;
+                break;
+            }
+        }
         currentStation.removePassenger(this);
-        train.numOfFreeSeats--;
+        //train.numOfFreeSeats--;
         System.out.println("Passenger " + id + " has boarded on Train" + train.getTrainNum());
     }
     
     public void getOffTrain(){
-        train.removePassenger(this);
+        //train.removePassenger(this);
+        for(int i = 0; i < train.getNumOfSeats(false); i++){
+            if(train.getPassengers()[i].equals(this)){
+                train.getPassengers()[i] = null;
+                break;
+            }
+        }
         currentStation = train.getCurrentStation();
-        train.numOfFreeSeats++;
+        //train.numOfFreeSeats++;
         train = null;
         System.out.println("Passenger " + id + " is getting off at Station " + currentStation.getStationNum());
     }

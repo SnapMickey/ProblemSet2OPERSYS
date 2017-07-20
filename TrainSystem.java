@@ -84,11 +84,16 @@ public class TrainSystem {
         
     public void requestNewTrain(Station station){
         boolean approveNewTrain = true;
-        for(int i=0;i<16;i++){
-            if(rails[i].getTrain() != null)
-                approveNewTrain = false;
-            else if(rails[i].getStation().equals(station))
-                break;
+        
+        if(serviceStation.isEmpty())
+            approveNewTrain = false;
+        else{
+            for(int i=0;i<16;i++){
+                if(rails[i].getTrain() != null)
+                    approveNewTrain = false;
+                else if(rails[i].getStation().equals(station))
+                    break;
+            }
         }
         
         if(approveNewTrain){
