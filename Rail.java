@@ -14,11 +14,12 @@ import java.util.concurrent.locks.*;
 public class Rail{
     Train train;
     Station station;
-    Lock lock = new ReentrantLock();
+    Lock lock; 
     
-    public Rail(Station station, Train train){
-        this.station = station;
-        this.train = train;
+    public Rail(){
+        this.station = null;
+        this.train = null;
+        this.lock = new ReentrantLock();
     }
     
     public Train getTrain(){
@@ -29,11 +30,17 @@ public class Rail{
         return station;
     }
     
+    public void setStation(Station station){
+        this.station = station;
+    }
+    
+    public Lock getLock(){
+        return lock;
+    }
+    
     public void setTrain(Train train){
         this.train = train;
     }
     
-    public void setStation(Station station){
-        this.station = station;
-    }
+    
 }

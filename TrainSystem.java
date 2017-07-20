@@ -14,21 +14,20 @@ import java.util.ArrayList;
 public class TrainSystem {
     Station[] stations;
     Rail[] rails;
+    ArrayList<Train> serviceStation;
     
     public TrainSystem(){   
-        Station[] stations = new Station[8];
-        Rail[] trainSystem = new Rail[16];
+        stations = new Station[8];
+        rails = new Rail[16];
+        serviceStation = new ArrayList(); 
         
         for(int i = 0; i < 8; i++){
             stations[i] = new Station(null,i+1); 
         }
-        
         for(int i = 0; i < 16; i++){
-            
+            rails[i] = new Rail();
             if(i%2==1)
-                trainSystem[i] = new Rail(stations[(i/2)],null);
-            else
-                trainSystem[i] = new Rail(null,null);
+                rails[i].setStation(stations[(i/2)-1]);
         }
     }
     
@@ -41,19 +40,25 @@ public class TrainSystem {
         }
     }
     
-    public void moveTrain(int trainNum){
-
+    public void createTrains(ArrayList<Train> trains){
+        serviceStation.addAll(trains);
+    }
+    
+    public void moveTrain(Train train){
         Rail currentRailPosition = null
            , nextRailPosition = null;
+        
         for(int i = 0; i < 16; i++){
             if(rails[i].getTrain() != null)
-                if(rails[i].getTrain().getTrainNum() == trainNum){
+                if(rails[i].getTrain().equals(train)){
                     currentRailPosition = rails[i];
                     nextRailPosition = rails[(i+1)%16];
                 }
         }
         Train movingTrain = currentRailPosition.getTrain();
         
+        nextRailPosition.getLock().lock();
+        currentRailPosition.getLock().unlock();
         currentRailPosition.setTrain(null);
         nextRailPosition.setTrain(movingTrain);
         
@@ -68,4 +73,22 @@ public class TrainSystem {
             movingTrain.setCurrentStation(nextRailPosition.getStation());
         }
     }
+        
+    public void requestTrain(Station station){
+        boolean approveNewTrain = true;
+        for(int i=0;i<16;i++){
+            if(rails[i].getTrain() != null)
+                approveNewTrain = false;
+            else if(rails[i].getStation().equals(station))
+                break;
+        }
+        
+        if(approveNewTrain)
+            deployTrain();
+    }
+    
+    public void deployTrain(){
+        
+    }
 }
+

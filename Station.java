@@ -13,8 +13,9 @@ import java.util.concurrent.locks.*;
 public class Station {
     int stationNum;
     Train trainAtStation;
-    Lock boarding;
-    Condition trainIsPresent, hasFreeSeats;
+    boolean isBoarding;
+    Lock stationLock, boardingLock;
+    Condition notBoarding, boarding;
     
     
     ArrayList<Passenger> passengers;
@@ -31,17 +32,24 @@ public class Station {
         this.stationNum = stationNum;
         this.trainAtStation = null;
         
-        boarding = new ReentrantLock();
-        trainIsPresent = boarding.newCondition();
-        hasFreeSeats = boarding.newCondition();
+        isBoarding = false;
+        
+        boardingLock = new ReentrantLock();
+        notBoarding = boardingLock.newCondition();
+        
+        stationLock = new ReentrantLock();
+        boarding = stationLock.newCondition();
     }
     
     public void addPassenger(ArrayList<Passenger> passengers){
         this.passengers.addAll(passengers);
+        for(Passenger p : passengers)
+            p.start();
     }
     
     public void addPassenger(Passenger passenger){
         this.passengers.add(passenger);
+        passenger.start();
     }
     
     public void removePassenger(ArrayList<Passenger> passengers){
@@ -67,4 +75,30 @@ public class Station {
     public void setTrain(Train train){
         trainAtStation = train;
     }
+    
+    public boolean isBoarding(){
+        return isBoarding;
+    }
+    
+    public void setIsBoarding(boolean truth){
+        this.isBoarding = truth;
+    }
+    
+    public Lock getBoardingLock(){
+        return boardingLock;
+    }
+    
+    public Condition getNotBoardingCondition(){
+        return notBoarding;
+    }
+    
+    public Lock getStationLock(){
+        return stationLock;
+    }
+    
+    public Condition getBoardingCondition(){
+        return boarding;
+    }
+    
+    
 }

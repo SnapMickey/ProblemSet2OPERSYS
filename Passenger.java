@@ -9,7 +9,7 @@ import java.util.logging.Logger;
  * 
  * Thread class for Robot Passengers.
  */
-public class Passenger implements Runnable{
+public class Passenger extends Thread{
     int id, destination;
     Station currentStation;
     Seat seat;
@@ -31,27 +31,56 @@ public class Passenger implements Runnable{
     */
     @Override
     public void run() {
+        stationWaitForTrain();
+        boardTrain();
         
-
-        
-        
+        getOffTrain();
+        Thread.currentThread().interrupt();
+        return;
     }
     
     /*
     *   WAIT FOR TRAIN FUNCTION
     */
-    public void stationWaitForTrain(Station station){
-        while(station.getTrain() == null)
-            try{
-            station.trainIsPresent.await();
+    public void stationWaitForTrain(){
+        currentStation.getBoardingLock().lock();
+        try {
+            while (currentStation.getTrain() == null) {
+                try{
+                currentStation.getNotBoardingCondition().await();
+                }
+                catch(InterruptedException e){}
             }
-            catch(Exception e){}
+            
+            boardTrain();
+            stationOnBoard();
+            
+            currentStation.getNotBoardingCondition().signal();
+        } finally {
+            currentStation.getBoardingLock().unlock();
+        }
     }
+    
+    public void boardTrain(){
+        currentStation.removePassenger(this);
+        currentStation = null;
+        train.addPassenger(this);
+        
+        System.out.println("Passenger " + id + " is getting on Train" + train.getTrainNum());
+    }
+    
+    public void getOffTrain(){
+        train.removePassenger(this);
+        currentStation = train.getCurrentStation();
+        System.out.println("Passenger " + id + " is getting off at Station " + currentStation.getStationNum());
+    }
+    
     
     /*
     *   ON BOARD TRAIN FUNCTION
     */
     public void stationOnBoard(){
+        seat.getLock().lock();
         while(train.getCurrentStation().getStationNum() != destination)
             try {
                 seat.getOccupied().await();

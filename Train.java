@@ -9,7 +9,8 @@ import java.util.concurrent.locks.Lock;
  * 
  * Thread class for Trains.
  */
-public class Train implements Runnable{
+public class Train extends Thread{
+    TrainSystem system;
     int trainNum;
     Station currentStation;
     ArrayList<Passenger> passengers;
@@ -18,7 +19,8 @@ public class Train implements Runnable{
     /*
     *   CONSTRUCTOR
     */
-    public Train(int trainNum, int seats){
+    public Train(TrainSystem system, int trainNum, int seats){
+        this.system = system;
         this.trainNum = trainNum;
         this.currentStation = null;
         this.passengers = new ArrayList();
@@ -33,26 +35,40 @@ public class Train implements Runnable{
     */
     @Override
     public void run() {
+            system.moveTrain(this);
         while(true){
-            for(int i = 0; i < 8; i++){
-                //Call stationLoadTrain
-                //Move train going to the next station
-            }
+            system.moveTrain(this);
+            stationLoadTrain();          
         }
     }
     
     public void stationLoadTrain(){
-    
+        try{
+            Thread.sleep(1000);
+            currentStation.getStationLock().lock();
+
+            while(getNumOfSeats(true) > 0 && currentStation.getNumOfPassengers() > 0){
+                currentStation.setIsBoarding(true);
+                currentStation.getBoardingCondition().await();
+            }
+            currentStation.setIsBoarding(false);
+            
+            currentStation.getBoardingCondition().signal();
+        }
+        catch(InterruptedException e){}
+        finally{
+            currentStation.getBoardingLock().unlock();
+        }
     }
     
-    public void freeSeat(Passenger p){
-        for (Seat seat : seats) 
-            if(seat != null)
-                if(seat.getID() == p.getID()) 
-                    seat = null;
+    public void addPassenger(Passenger passenger){
+        passengers.add(passenger);
     }
-     
-     
+    
+    public void removePassenger(Passenger passenger){
+        passengers.remove(passenger);
+    }
+    
     public int getNumOfPassengers(){
         return passengers.size();
     }
