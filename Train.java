@@ -1,6 +1,8 @@
 
 import java.util.ArrayList;
 import java.util.concurrent.locks.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -12,12 +14,8 @@ import java.util.concurrent.locks.*;
 public class Train extends Thread{
     TrainSystem system;
     int trainNum, numOfSeats, numOfFreeSeats;
-    boolean passengersGettingOff;
     Station currentStation;
-    ArrayList<Passenger> passengers;  
-    Lock onBoard;
-    Condition notAtDestination;
-    
+    ArrayList<Passenger> passengers;
     /*
     *   CONSTRUCTOR
     */
@@ -25,11 +23,8 @@ public class Train extends Thread{
         this.system = system;
         this.trainNum = trainNum;
         this.currentStation = null;
-        passengersGettingOff = false;
         numOfSeats = numOfFreeSeats = seats;
         passengers = new ArrayList();
-        onBoard = new ReentrantLock();
-        notAtDestination = onBoard.newCondition();
     }
 
     /*
@@ -40,33 +35,17 @@ public class Train extends Thread{
         system.enterRailSystem(this);
         while(true){
             system.moveTrain(this);
-            stationLoadTrain();   
-            system.moveTrain(this);
-        }
-    }
-    
-    public void stationLoadTrain(){
-        System.out.println("Train " + trainNum + "  has arrived at Station " + currentStation.getStationNum());
-        try{
-            Thread.sleep(1000);
-            currentStation.getStationLock().lock();
 
-            
-            while((getNumOfSeats(true) > 0 && currentStation.getNumOfPassengers() > 0) || passengersGettingOff){
-                currentStation.setIsBoarding(true);
-                currentStation.getBoardingCondition().await();
+            System.out.println("Train " + trainNum + "  has arrived at Station " + currentStation.getStationNum());
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Train.class.getName()).log(Level.SEVERE, null, ex);
             }
+            currentStation.stationLoadTrain();
             System.out.println("Train " + trainNum + "  is leaving Station " + currentStation.getStationNum());
-            currentStation.setIsBoarding(false);
-            
-            currentStation.getBoardingCondition().signal();
-        }
-        catch(InterruptedException e){}
-        finally{
-            try{
-            currentStation.getBoardingLock().unlock();
-            }
-            catch(Exception e){}
+
+            system.moveTrain(this);
         }
     }
     
@@ -78,6 +57,10 @@ public class Train extends Thread{
     public void removePassenger(Passenger passenger){
         passengers.remove(passenger);
         numOfFreeSeats++;
+    }
+    
+    public ArrayList getPassengers(){
+        return passengers;
     }
     
     public int getNumOfPassengers(){
@@ -101,21 +84,5 @@ public class Train extends Thread{
     
     public void setCurrentStation(Station station){
         currentStation = station;
-    }
-    
-    public boolean arePassengersGettingOff(){
-        return passengersGettingOff;
-    }
-    
-    public void setPassengersGettingOff(boolean truth){
-        passengersGettingOff = truth;
-    }
-    
-    public Lock getOnBoardLock(){
-        return onBoard;
-    }
-    
-    public Condition getNotAtDestinationCondition(){
-        return notAtDestination;
     }
 }

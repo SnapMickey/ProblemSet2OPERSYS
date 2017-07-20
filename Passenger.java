@@ -29,53 +29,27 @@ public class Passenger extends Thread{
     */
     @Override
     public void run() {
-        stationWaitForTrain();
-        boardTrain();
-        
-        getOffTrain();
-        Thread.currentThread().interrupt();
-        return;
+        System.out.println("Passenger " + id + " is waiting at Station " + currentStation.getStationNum());
+        currentStation.stationWaitForTrain(this);
+        currentStation.stationOnBoard();
+        currentStation = null;
     }
     
     /*
     *   WAIT FOR TRAIN FUNCTION
     */
-    public void stationWaitForTrain(){
-        System.out.println("Passenger " + id + " is waiting at Station " + currentStation.getStationNum());
-        currentStation.getBoardingLock().lock();
-        try {
-            while (currentStation.getTrain() == null) {
-                try{
-                    currentStation.getNotBoardingCondition().await();
-                }
-                catch(InterruptedException e){}
-            }
-            currentStation.getNotBoardingCondition().signal();
-        } finally {
-            try{
-            currentStation.getBoardingLock().unlock();
-            }
-            catch(Exception e){
-                System.out.println(e);
-            }
-        }
-        
-        boardTrain();
-        stationOnBoard();
-    }
     
     public void boardTrain(){
         train = currentStation.getTrain();
         train.addPassenger(this);
         currentStation.removePassenger(this);
-        currentStation = null;
-        
         System.out.println("Passenger " + id + " has boarded on Train" + train.getTrainNum());
     }
     
     public void getOffTrain(){
         train.removePassenger(this);
         currentStation = train.getCurrentStation();
+        train = null;
         System.out.println("Passenger " + id + " is getting off at Station " + currentStation.getStationNum());
     }
     
@@ -83,25 +57,7 @@ public class Passenger extends Thread{
     /*
     *   ON BOARD TRAIN FUNCTION
     */
-    public void stationOnBoard(){
-        train.getOnBoardLock().lock();
-        try {
-            while(train.getCurrentStation().getStationNum() != destination)
-                try {
-                    train.getNotAtDestinationCondition().await();
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(Passenger.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            train.setPassengersGettingOff(true);
-            getOffTrain();
-            train.setPassengersGettingOff(false);
-            train.getNotAtDestinationCondition().signal();  
-        } finally {
-            train.getOnBoardLock().unlock();
-        }
-        
-        train = null;
-    }
+    
 
     public int getID(){
         return id;

@@ -1,6 +1,8 @@
 
 import java.util.ArrayList;
 import java.util.concurrent.locks.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -13,7 +15,6 @@ import java.util.concurrent.locks.*;
 public class Station {
     int stationNum;
     Train trainAtStation;
-    boolean isBoarding;
     Lock stationLock, boardingLock;
     Condition notBoarding, boarding;
     
@@ -32,13 +33,11 @@ public class Station {
         this.stationNum = stationNum;
         this.trainAtStation = null;
         
-        isBoarding = false;
-        
         boardingLock = new ReentrantLock();
-        notBoarding = boardingLock.newCondition();
+        boarding = boardingLock.newCondition();
         
         stationLock = new ReentrantLock();
-        boarding = stationLock.newCondition();
+        notBoarding = stationLock.newCondition();
     }
     
     public void addPassenger(ArrayList<Passenger> passengers){
@@ -80,29 +79,70 @@ public class Station {
         trainAtStation = train;
     }
     
-    public boolean isBoarding(){
-        return isBoarding;
+    public void stationLoadTrain(){
+        stationLock.lock();
+        try{
+            
+            ArrayList<Passenger>passengersOnTrain = new ArrayList();
+            passengersOnTrain.addAll(trainAtStation.getPassengers());
+            
+            boardingLock.lock();
+            try{
+                for(Passenger p : passengersOnTrain){
+                    if(p.getDestination() == stationNum){
+                        trainAtStation.removePassenger(p);
+                        p.getOffTrain();
+                    }
+                }
+                    boarding.signal();
+            }finally {
+                    boardingLock.unlock();
+            }
+            
+            try {
+                if(passengers.size() > 0)
+                    notBoarding.await();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Station.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            notBoarding.signal();
+        }finally{ 
+            stationLock.unlock();
+        }
     }
     
-    public void setIsBoarding(boolean truth){
-        this.isBoarding = truth;
+    public void stationWaitForTrain(Passenger p){
+        
+        boardingLock.lock();
+        try {
+            while (trainAtStation == null) {
+                try{
+                    boarding.await();
+                }
+                catch(InterruptedException e){}
+            }
+            
+            p.boardTrain();
+            
+            boarding.signal();
+        } finally {
+            boardingLock.unlock();
+        }
     }
     
-    public Lock getBoardingLock(){
-        return boardingLock;
+    public void stationOnBoard(){
+        stationLock.lock();
+        try {
+            if((trainAtStation.getNumOfSeats(true) > 0 && passengers.size() > 0)){
+                try {
+                    notBoarding.await();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Station.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            notBoarding.signal();
+        } finally {
+            stationLock.unlock();
+        }
     }
-    
-    public Condition getNotBoardingCondition(){
-        return notBoarding;
-    }
-    
-    public Lock getStationLock(){
-        return stationLock;
-    }
-    
-    public Condition getBoardingCondition(){
-        return boarding;
-    }
-    
-    
 }
