@@ -100,7 +100,7 @@ public class Station {
             }
             
             try {
-                if(passengers.size() > 0)
+                while(trainAtStation.getNumOfSeats(true) > 0 && passengers.size() > 0)
                     notBoarding.await();
             } catch (InterruptedException ex) {
                 Logger.getLogger(Station.class.getName()).log(Level.SEVERE, null, ex);
@@ -109,6 +109,9 @@ public class Station {
         }finally{ 
             stationLock.unlock();
         }
+        
+        if(passengers.size() > 0)
+            trainAtStation.requestTrain();
     }
     
     public void stationWaitForTrain(Passenger p){

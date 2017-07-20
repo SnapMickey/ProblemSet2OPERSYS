@@ -49,6 +49,11 @@ public class Train extends Thread{
         }
     }
     
+    public void requestTrain(){
+        system.requestNewTrain(currentStation);
+    }
+    
+    
     public void addPassenger(Passenger passenger){
         passengers.add(passenger);
         numOfFreeSeats--;
