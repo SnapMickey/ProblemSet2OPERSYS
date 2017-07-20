@@ -35,7 +35,7 @@ public class Train extends Thread{
     */
     @Override
     public void run() {
-            system.moveTrain(this);
+        system.enterRailSystem(this);
         while(true){
             system.moveTrain(this);
             stationLoadTrain();          
@@ -43,6 +43,7 @@ public class Train extends Thread{
     }
     
     public void stationLoadTrain(){
+        System.out.println("Train " + trainNum + "  has arrived at Station " + currentStation.getStationNum());
         try{
             Thread.sleep(1000);
             currentStation.getStationLock().lock();
@@ -51,6 +52,7 @@ public class Train extends Thread{
                 currentStation.setIsBoarding(true);
                 currentStation.getBoardingCondition().await();
             }
+            System.out.println("Train " + trainNum + "  is leaving Station " + currentStation.getStationNum());
             currentStation.setIsBoarding(false);
             
             currentStation.getBoardingCondition().signal();

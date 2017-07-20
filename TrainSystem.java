@@ -27,7 +27,7 @@ public class TrainSystem {
         for(int i = 0; i < 16; i++){
             rails[i] = new Rail();
             if(i%2==1)
-                rails[i].setStation(stations[(i/2)-1]);
+                rails[i].setStation(stations[i/2]);
         }
     }
     
@@ -35,6 +35,12 @@ public class TrainSystem {
         for(Station s : stations){
             if(s.getStationNum() == stationNum){
                 s.addPassenger(passengers);
+                
+                for(Passenger p : passengers){
+                    p.setCurrentStation(s);
+                    if(!p.isAlive())
+                        p.start();
+                }
                 break;
             }
         }
@@ -74,7 +80,7 @@ public class TrainSystem {
         }
     }
         
-    public void requestTrain(Station station){
+    public void requestNewTrain(Station station){
         boolean approveNewTrain = true;
         for(int i=0;i<16;i++){
             if(rails[i].getTrain() != null)
@@ -83,12 +89,21 @@ public class TrainSystem {
                 break;
         }
         
-        if(approveNewTrain)
+        if(approveNewTrain){
             deployTrain();
+        }
     }
     
     public void deployTrain(){
-        
+        Train newTrain = serviceStation.get(0);
+        serviceStation.remove(0);
+        newTrain.start();
+    }
+    
+    public void enterRailSystem(Train train){
+        rails[0].getLock().lock();
+        rails[0].setTrain(train);
+        System.out.println("Train " + train.getTrainNum() + " has entered the RailSystem");
     }
 }
 

@@ -18,9 +18,9 @@ public class Passenger extends Thread{
     /*
     *   CONSTRUCTOR
     */
-    public Passenger(int id, Station source, int destination){
+    public Passenger(int id, int destination){
         this.id = id;
-        this.currentStation = source;
+        this.currentStation = null;
         this.destination = destination;
         this.seat = null;
         this.train = null;
@@ -43,6 +43,7 @@ public class Passenger extends Thread{
     *   WAIT FOR TRAIN FUNCTION
     */
     public void stationWaitForTrain(){
+        System.out.println("Passenger " + id + " is waiting at Station " + currentStation.getStationNum());
         currentStation.getBoardingLock().lock();
         try {
             while (currentStation.getTrain() == null) {
@@ -57,16 +58,22 @@ public class Passenger extends Thread{
             
             currentStation.getNotBoardingCondition().signal();
         } finally {
+            try{
             currentStation.getBoardingLock().unlock();
+            }
+            catch(Exception e){
+                System.out.println(e);
+            }
         }
     }
     
     public void boardTrain(){
+        train = currentStation.getTrain();
+        train.addPassenger(this);
         currentStation.removePassenger(this);
         currentStation = null;
-        train.addPassenger(this);
         
-        System.out.println("Passenger " + id + " is getting on Train" + train.getTrainNum());
+        System.out.println("Passenger " + id + " has boarded on Train" + train.getTrainNum());
     }
     
     public void getOffTrain(){
@@ -81,18 +88,25 @@ public class Passenger extends Thread{
     */
     public void stationOnBoard(){
         seat.getLock().lock();
-        while(train.getCurrentStation().getStationNum() != destination)
-            try {
-                seat.getOccupied().await();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(Passenger.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        seat.getOccupied().signal();
-        seat.getLock().unlock();  
+        try {
+            while(train.getCurrentStation().getStationNum() != destination)
+                try {
+                    seat.getOccupied().await();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Passenger.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            seat.getOccupied().signal();  
+        } finally {
+            seat.getLock().unlock();
+        }
     }
 
     public int getID(){
         return id;
+    }
+    
+    public void setCurrentStation(Station station){
+        currentStation = station;
     }
     
     public Station getCurrentStation(){

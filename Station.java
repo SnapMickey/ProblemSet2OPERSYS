@@ -60,6 +60,10 @@ public class Station {
         this.passengers.remove(passenger);
     }
     
+    public ArrayList<Passenger> getPassengers(){
+        return passengers;
+    }
+    
     public int getNumOfPassengers(){
         return passengers.size();
     }
