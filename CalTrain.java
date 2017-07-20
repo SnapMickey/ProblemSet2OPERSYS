@@ -17,11 +17,11 @@ public class CalTrain {
         ArrayList<Passenger> passengers = new ArrayList();
         ArrayList<Train> trains = new ArrayList();
         
-        trains.add(new Train(system,1,2));
+        trains.add(new Train(system,1,1));
         system.createTrains(trains);
         
         passengers.add(new Passenger(1,2));
-        passengers.add(new Passenger(2,2));
+        passengers.add(new Passenger(2,4));
         system.acceptPassengers(1,passengers);
         
         system.deployTrain();

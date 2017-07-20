@@ -118,7 +118,7 @@ public class Station {
         
         boardingLock.lock();
         try {
-            while (trainAtStation == null) {
+            while (trainAtStation == null || trainAtStation.getNumOfSeats(true) == 0) {
                 try{
                     boarding.await();
                 }

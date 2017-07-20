@@ -43,12 +43,14 @@ public class Passenger extends Thread{
         train = currentStation.getTrain();
         train.addPassenger(this);
         currentStation.removePassenger(this);
+        train.numOfFreeSeats--;
         System.out.println("Passenger " + id + " has boarded on Train" + train.getTrainNum());
     }
     
     public void getOffTrain(){
         train.removePassenger(this);
         currentStation = train.getCurrentStation();
+        train.numOfFreeSeats++;
         train = null;
         System.out.println("Passenger " + id + " is getting off at Station " + currentStation.getStationNum());
     }
