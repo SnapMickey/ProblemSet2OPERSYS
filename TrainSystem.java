@@ -78,6 +78,8 @@ public class TrainSystem {
             nextRailPosition.getStation().setTrain(movingTrain);
             movingTrain.setCurrentStation(nextRailPosition.getStation());
         }
+        
+        
     }
         
     public void requestNewTrain(Station station){

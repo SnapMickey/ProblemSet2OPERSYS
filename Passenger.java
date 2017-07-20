@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 public class Passenger extends Thread{
     int id, destination;
     Station currentStation;
-    Seat seat;
     Train train;                                      
 
     /*
@@ -22,7 +21,6 @@ public class Passenger extends Thread{
         this.id = id;
         this.currentStation = null;
         this.destination = destination;
-        this.seat = null;
         this.train = null;
     }
     
@@ -48,14 +46,10 @@ public class Passenger extends Thread{
         try {
             while (currentStation.getTrain() == null) {
                 try{
-                currentStation.getNotBoardingCondition().await();
+                    currentStation.getNotBoardingCondition().await();
                 }
                 catch(InterruptedException e){}
             }
-            
-            boardTrain();
-            stationOnBoard();
-            
             currentStation.getNotBoardingCondition().signal();
         } finally {
             try{
@@ -65,6 +59,9 @@ public class Passenger extends Thread{
                 System.out.println(e);
             }
         }
+        
+        boardTrain();
+        stationOnBoard();
     }
     
     public void boardTrain(){
@@ -87,18 +84,23 @@ public class Passenger extends Thread{
     *   ON BOARD TRAIN FUNCTION
     */
     public void stationOnBoard(){
-        seat.getLock().lock();
+        train.getOnBoardLock().lock();
         try {
             while(train.getCurrentStation().getStationNum() != destination)
                 try {
-                    seat.getOccupied().await();
+                    train.getNotAtDestinationCondition().await();
                 } catch (InterruptedException ex) {
                     Logger.getLogger(Passenger.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            seat.getOccupied().signal();  
+            train.setPassengersGettingOff(true);
+            getOffTrain();
+            train.setPassengersGettingOff(false);
+            train.getNotAtDestinationCondition().signal();  
         } finally {
-            seat.getLock().unlock();
+            train.getOnBoardLock().unlock();
         }
+        
+        train = null;
     }
 
     public int getID(){

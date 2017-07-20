@@ -1,6 +1,6 @@
 
 import java.util.ArrayList;
-import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.*;
 
 /**
  *
@@ -11,10 +11,12 @@ import java.util.concurrent.locks.Lock;
  */
 public class Train extends Thread{
     TrainSystem system;
-    int trainNum;
+    int trainNum, numOfSeats, numOfFreeSeats;
+    boolean passengersGettingOff;
     Station currentStation;
-    ArrayList<Passenger> passengers;
-    Seat seats[];  
+    ArrayList<Passenger> passengers;  
+    Lock onBoard;
+    Condition notAtDestination;
     
     /*
     *   CONSTRUCTOR
@@ -23,11 +25,11 @@ public class Train extends Thread{
         this.system = system;
         this.trainNum = trainNum;
         this.currentStation = null;
-        this.passengers = new ArrayList();
-        this.seats = new Seat[seats];
-        
-        for(int i = 0; i < seats; i++)
-            this.seats[i] = new Seat(i);
+        passengersGettingOff = false;
+        numOfSeats = numOfFreeSeats = seats;
+        passengers = new ArrayList();
+        onBoard = new ReentrantLock();
+        notAtDestination = onBoard.newCondition();
     }
 
     /*
@@ -38,7 +40,8 @@ public class Train extends Thread{
         system.enterRailSystem(this);
         while(true){
             system.moveTrain(this);
-            stationLoadTrain();          
+            stationLoadTrain();   
+            system.moveTrain(this);
         }
     }
     
@@ -48,7 +51,8 @@ public class Train extends Thread{
             Thread.sleep(1000);
             currentStation.getStationLock().lock();
 
-            while(getNumOfSeats(true) > 0 && currentStation.getNumOfPassengers() > 0){
+            
+            while((getNumOfSeats(true) > 0 && currentStation.getNumOfPassengers() > 0) || passengersGettingOff){
                 currentStation.setIsBoarding(true);
                 currentStation.getBoardingCondition().await();
             }
@@ -59,16 +63,21 @@ public class Train extends Thread{
         }
         catch(InterruptedException e){}
         finally{
+            try{
             currentStation.getBoardingLock().unlock();
+            }
+            catch(Exception e){}
         }
     }
     
     public void addPassenger(Passenger passenger){
         passengers.add(passenger);
+        numOfFreeSeats--;
     }
     
     public void removePassenger(Passenger passenger){
         passengers.remove(passenger);
+        numOfFreeSeats++;
     }
     
     public int getNumOfPassengers(){
@@ -76,19 +85,10 @@ public class Train extends Thread{
     }
     
     public int getNumOfSeats(boolean onlyFree){
-        if(onlyFree){
-            int numOfFreeSeats = 0;
-            for (Seat seat : seats) 
-                try{
-                    if(seat.getLock().tryLock())
-                        numOfFreeSeats++;
-                }
-                finally{seat.getLock().unlock();}
-
+        if(onlyFree)
             return numOfFreeSeats;
-        }
         else
-            return seats.length;
+            return numOfSeats;
     }
     
     public int getTrainNum(){
@@ -101,5 +101,21 @@ public class Train extends Thread{
     
     public void setCurrentStation(Station station){
         currentStation = station;
+    }
+    
+    public boolean arePassengersGettingOff(){
+        return passengersGettingOff;
+    }
+    
+    public void setPassengersGettingOff(boolean truth){
+        passengersGettingOff = truth;
+    }
+    
+    public Lock getOnBoardLock(){
+        return onBoard;
+    }
+    
+    public Condition getNotAtDestinationCondition(){
+        return notAtDestination;
     }
 }
